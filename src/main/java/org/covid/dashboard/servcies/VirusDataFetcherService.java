@@ -3,6 +3,7 @@ package org.covid.dashboard.servcies;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.covid.dashboard.model.Cases;
+import org.covid.dashboard.model.CasesTwo;
 import org.covid.dashboard.model.VaccinatedCases;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,7 @@ public class VirusDataFetcherService {
         fetchVirusData(RecoveredCases, recoveredCasesList);
         fetchVirusData(DeathCases, deathCasesList);
         fetchVirusDataForVaccinated(VaccinatedCases, vaccinatedCasesList);
+
     }
 
     private void fetchVirusData(String dataURI, List<Cases> casesList) throws IOException, InterruptedException {
@@ -71,6 +73,7 @@ public class VirusDataFetcherService {
         HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         populateConfirmedCases(httpResponse.body(), casesList);
+        populateConfirmedCasesTwo(httpResponse.body());
     }
 
     private void populateConfirmedCases(String csvFile, List<Cases> casesList) throws IOException {
@@ -88,6 +91,40 @@ public class VirusDataFetcherService {
 
             casesList.add(new Cases(country, state, currentDaysCases, previousDaysCases));
         }
+
+        reader.close();
+    }
+
+    private void populateConfirmedCasesTwo(String csvFile) throws IOException {
+        List<CasesTwo> casesTwoList = new ArrayList<>();
+
+        String[] formattedDateHeaderColumns = getFormattedDateHeaderColumns();
+
+        Reader reader = new StringReader(csvFile);
+
+        Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(reader);
+
+        for (CSVRecord record : records) {
+/*
+            Long currentDaysCases = Long.valueOf(record.get(formattedDateHeaderColumns[0]));
+            Long previousDaysCases = Long.valueOf(record.get(formattedDateHeaderColumns[1]));*/
+            ;
+
+            CasesTwo casesTwo = new CasesTwo();
+
+            String country = record.get("Country/Region");
+            String state = record.get("Province/State");
+
+            casesTwo.setCountry(country);
+            casesTwo.setState(state);
+
+            for (int i = 1; i < record.size() -4; i++){
+                casesTwo.getCurrentDaysCases().add(
+                        Long.valueOf(record.get(LocalDate.now().minusDays(i).format(DateTimeFormatter.ofPattern("M/d/yy")).toString())));
+            }
+            System.out.println(casesTwo);
+        }
+
 
         reader.close();
     }
