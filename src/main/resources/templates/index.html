@@ -3,6 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link rel="stylesheet" th:href="@{webjars\bootstrap\3.3.7\dist\css\bootstrap.min.css}" />
+    <link rel="stylesheet" href="@{css/style.css}" />
+
     <meta charset="UTF-8">
     <title>C19 DASH</title>
 </head>
@@ -10,10 +13,9 @@
 <h1>Total confirmed cases:</h1>
 <h3 th:text="${total}"></h3>
 
-
 <h1>Total death cases:</h1>
 <h3 th:text="${death}"></h3>
-<!--
+
 <h1>Total recovered cases:</h1>
 <h3 th:text="${recover}"></h3>
 
@@ -30,6 +32,6 @@
 <h3 th:text="${vacc}"></h3>
 
 <h1>Total Country vacc cases:</h1>
-<h3 th:text="${vaccCo}"></h3>-->
+<h3 th:text="${vaccCo}"></h3>
 </body>
 </html>
