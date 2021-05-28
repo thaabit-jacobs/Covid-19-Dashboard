@@ -1,10 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>C19 DASH</title>
 </head>
 <body>
-$END$
+<h1>Total confirmed cases:</h1>
+<h3 th:text="${total}"></h3>
+
+
+<h1>Total death cases:</h1>
+<h3 th:text="${death}"></h3>
+<!--
+<h1>Total recovered cases:</h1>
+<h3 th:text="${recover}"></h3>
+
+<h1>Total Country confirmed cases:</h1>
+<h3 th:text="${confirmedCases}"></h3>
+
+<h1>Total Country death:</h1>
+<h3 th:text="${deathCases}"></h3>
+
+<h1>Total Country recovered cases:</h1>
+<h3 th:text="${recoveredCases}"></h3>
+
+<h1>Total Country vaccinated cases:</h1>
+<h3 th:text="${vacc}"></h3>
+
+<h1>Total Country vacc cases:</h1>
+<h3 th:text="${vaccCo}"></h3>-->
 </body>
 </html>
