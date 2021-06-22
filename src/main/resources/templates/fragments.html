@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head th:fragment="head">
+    <link rel="stylesheet" href="/webjars/bootstrap/4.6.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <meta charset="UTF-8">
+    <title>C19 DASH</title>
+</head>
+
+<body>
+<div class="my-4" th:fragment="headings">
+    <h1>Coronavirus Statistics</h1>
+    <h2 class="mb-3" th:text="${countryName}">Country Name</h2>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar">
+    <a class="navbar-brand" href="/dashboard?type=CONFIRMED">CV-19 Dashboard</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-link" href="https://github.com/CSSEGISandData/COVID-19">Raw data</a>
+        </div>
+    </div>
+</nav>
+
+<div th:fragment="totalStats" class="row">
+    <div class="col w-50 h-25 text-white bg-warning mx-4 my-4 shadow rounded">
+        <p class="font-weight-bold h2 my-2" th:text="${confirmedTotal}"></p>
+        <p class="h5 my-2">Infected</p>
+    </div>
+
+    <div class="col w-50 h-25 text-white bg-danger mx-4 my-4 shadow rounded">
+        <p class="font-weight-bold h2 my-2" th:text="${deathsTotal}"></p>
+        <p class="h5 my-2" th:text="|Deaths ${deathsPercent}%|">Deaths</p>
+    </div>
+
+    <div class="col w-50 h-25 text-white bg-success mx-4 my-4 shadow rounded">
+        <p class="font-weight-bold h2 my-2" th:text="${recoveredTotal}"></p>
+        <p class="h5 my-2">Recovered</p>
+    </div>
+
+</div>
+
+<div th:fragment="totalNumberCasesGraph" >
+
+    <div style="height:80vh">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <canvas id="totalGraph" width="400" height="400"></canvas>
+                <script th:inline="javascript">
+                    let countriesTotalDataEachDay = [[${countriesTotalDataEachDay}]]
+
+                    var ctx = document.getElementById('totalGraph').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [[${dateLabels}]],
+                            datasets: [{
+                                label: '# of deaths',
+                                data: countriesTotalDataEachDay.deaths,
+                                borderColor:'red',
+                                borderWidth: 8
+                            },
+                            {
+                                label: '# of confirmed',
+                                data: countriesTotalDataEachDay.confirmed,
+                                borderColor:'yellow',
+                                borderWidth: 8
+                            },
+                            {
+                                label: '# of recovered',
+                                data: countriesTotalDataEachDay.recovered,
+                                borderColor:'green',
+                                borderWidth: 8
+                            }
+                            ]
+                        },
+                    options: {
+                         elements: {
+                            point:{
+                                radius: 0
+                                  }
+                            },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                    });
+
+        </script>
+
+    </div>
+
+</div>
+
+<!-- Second Graph -->
+<div th:fragment="topInfectedDeathsByCountryGraph" >
+
+    <div style="height:80vh">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <canvas id="TopInfectedDeathsGraph" width="400" height="400"></canvas>
+        <script th:inline="javascript">
+
+                    let countryTotals = [[${individualCountryTotals}]]
+                    let countryLabels = [[${individualCountryTotalsLabels}]]
+
+                    console.log(countryTotals);
+                    console.log(countryLabels);
+
+                    let infectedTotals = [];
+                    let deathsTotals = [];
+
+
+                    for(item in countryLabels){
+                        infectedTotals.push(countryTotals[countryLabels[item]]["confirmed"])
+                        deathsTotals.push(countryTotals[countryLabels[item]]["deaths"])
+                    }
+
+                    var ctx = document.getElementById('TopInfectedDeathsGraph').getContext('2d');
+
+                    var data = {
+                        labels: countryLabels,
+                        datasets: [
+                            {
+                                barPercentage: 1,
+                                categoryPercentage: 1,
+                                label: "infected",
+                                backgroundColor: "orange",
+                                maxBarThickness: 8,
+                                data: infectedTotals
+                            },
+                            {
+                                barPercentage: 1,
+                                categoryPercentage: 1,
+                                label: "deaths",
+                                backgroundColor: "red",
+                                maxBarThickness: 8,
+                                data: deathsTotals
+                            }
+                        ]
+                    };
+
+                    var myBarChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            indexAxis: 'y',
+                            barValueSpacing: 5,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        min: 0,
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+        </script>
+
+    </div>
+
+</div>
+
+<-- ######-->
+<div th:fragment="highestInfectionGraph" >
+
+    <div style="height:80vh">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <canvas id="highestInfectionGraph" width="400" height="400"></canvas>
+        <script th:inline="javascript">
+                    let colors = ['aqua', 'black', 'blue', 'fuchsia', 'gray', 'green',
+                                    'lime', 'maroon', 'navy', 'olive', 'orange', 'purple', 'red',
+                                    'silver', 'teal', 'cyan', 'yellow'];
+
+                    let dataSetArrayTwo = [];
+
+                    let countryTotalsTwo = [[${allCountryDataForEachDay}]]
+                    let keysTwo = [[${dateLabels}]];
+
+                    let confirmedDataArray = []
+
+                    for(item in countryTotalsTwo){
+                        for(date in keysTwo){
+                            confirmedDataArray.push(countryTotalsTwo[item]["confirmed"][keysTwo[date]])
+                        }
+                            let currentDataSetObject = {
+                            label: item,
+                            data:confirmedDataArray,
+                            borderColor:colors.pop(),
+                            borderWidth: 8  }
+
+                            dataSetArrayTwo.push(currentDataSetObject);
+
+                           confirmedDataArray = [];
+                    }
+
+                    var ctx = document.getElementById('highestInfectionGraph').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [[${dateLabels}]],
+                            datasets: dataSetArrayTwo
+                        },
+                    options: {
+                         elements: {
+                            point:{
+                                radius: 0
+                                  }
+                            },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                    });
+
+        </script>
+
+    </div>
+
+</div>
+
+<-- ######-->
+<div th:fragment="highestDeathGraph" >
+
+    <div style="height:80vh">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <canvas id="highestDeathGraph" width="400" height="400"></canvas>
+        <script th:inline="javascript">
+                    let colorsTwo = ['aqua', 'black', 'blue', 'fuchsia', 'gray', 'green',
+                                    'lime', 'maroon', 'navy', 'olive', 'orange', 'purple', 'red',
+                                    'silver', 'teal', 'cyan', 'yellow'];
+
+                    let dataSetArray = [];
+
+                    let countryTotalsThree = [[${allCountryDataForEachDaySortByDeaths}]]
+                    let keys = [[${dateLabels}]];
+
+                    console.log(countryTotalsTwo)
+
+                    let deathDataArray = []
+
+                    for(item in countryTotalsThree){
+                        for(date in keys){
+                            deathDataArray.push(countryTotalsThree[item]["deaths"][keys[date]])
+                        }
+                            let currentDataSetObject = {
+                            label: item,
+                            data:deathDataArray,
+                            borderColor:colorsTwo.pop(),
+                            borderWidth: 8  }
+
+                            dataSetArray.push(currentDataSetObject);
+
+                           deathDataArray = [];
+                    }
+
+                    var ctx = document.getElementById('highestDeathGraph').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [[${dateLabels}]],
+                            datasets: dataSetArray
+                        },
+                    options: {
+                         elements: {
+                            point:{
+                                radius: 0
+                                  }
+                            },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                    });
+
+        </script>
+
+    </div>
+
+</div>
+
+<div th:fragment="pieChart" >
+
+    <div style="height:80vh">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <canvas id="pieChart" width="400" height="400"></canvas>
+        <script th:inline="javascript">
+
+                        let inffectedTotal = [[${confirmedTotal}]]
+                        let detahsTotal = [[${deathsTotal}]]
+                        let recoveredTotal = [[${recoveredTotal}]]
+
+                        let arr = []
+                        arr.push(inffectedTotal)
+                        arr.push(detahsTotal)
+                        arr.push(recoveredTotal)
+
+                    var ctx = document.getElementById('pieChart').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+
+                        data: {
+                            datasets: [{
+                                label: 'Dataset 1',
+                                data: arr,
+                                backgroundColor: ['orange', 'red', 'green']
+                            }
+                            ],
+                            labels: ['infected', 'deaths', 'recovered']
+                        },
+                    options: {
+                         elements: {
+                            point:{
+                                radius: 0
+                                  }
+                            },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                    });
+
+        </script>
+
+    </div>
+
+</div>
+
+
+<div th:fragment="countryList">
+    <h2 class="d-flex justify-content-start">Countries details</h2>
+
+    <div>
+            <span th:each="country: ${countryNames}">
+                <a th:href="|/dashboard/${country}|" class="btn btn-info text-white mx-2 my-1" th:text="${country}">country</a>
+            </span>
+
+    </div>
+</div>
+</body>
+</html>

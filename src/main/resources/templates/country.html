@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+
+<head th:replace="fragments :: head">
+</head>
+
+<body>
+<nav th:replace="fragments :: navbar">
+</nav>
+
+<div class="container text-center">
+    <div th:replace="fragments :: headings"></div>
+
+    <div th:replace="fragments :: totalStats"></div>
+
+    <div class="my-5">
+        <h2 class="my-5" th:text="|Total number of infected, deaths and recovered for ${countryName}|">Total number of infected, deaths and recovered</h2>
+        <div th:replace="fragments :: totalNumberCasesGraph"></div>
+    </div>
+
+    <div class="my-5">
+        <h2 class="my-5" th:text="|Number of active cases in ${countryName}|"></h2>
+        <div style="height:80vh">
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <canvas id="activeCasesGraph" width="400" height="400"></canvas>
+            <script th:inline="javascript">
+                    let activeCases = [[${activeCasesPerDay}]]
+
+                    var ctx = document.getElementById('activeCasesGraph').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [[${dateLabels}]],
+                            datasets: [{
+                                label: 'current active',
+                                data: activeCases,
+                                borderColor:'MediumPurple',
+                                borderWidth: 8
+                            }
+                            ]
+                        },
+                    options: {
+                         elements: {
+                            point:{
+                                radius: 0
+                                  }
+                            },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                    });
+
+        </script>
+
+        </div>
+    </div>
+
+    <div class="my-5">
+        <h2 class="my-5" th:text="|Total number of infected, deaths and recovered (${countryName})|"></h2>
+        <div th:replace="fragments :: pieChart"></div>
+    </div>
+
+    <a href="/dashboard?type=CONFIRMED" class="btn btn-info">Back to home page</a>
+
+    <div th:replace="fragments :: countryList"></div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -3,15 +3,15 @@ package org.covid.dashboard.model;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class CasesTwo {
+public class CountryCases {
         private String country;
-        private String state;
-        private List<Long> currentDaysCases = new ArrayList<>();
+        private Map<String, Long> casesByDate = new HashMap<>();
 }

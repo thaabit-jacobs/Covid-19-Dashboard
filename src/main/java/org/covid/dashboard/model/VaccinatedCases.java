@@ -1,16 +1,15 @@
 package org.covid.dashboard.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@NoArgsConstructor
 @ToString
 public class VaccinatedCases{
     private String country;
-    private String state;
-    private long totalNumberOfVaccinations;
+    private Map<String, Long> vaccinationsByDate = new HashMap<>();;
 }

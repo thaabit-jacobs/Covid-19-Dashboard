@@ -1,69 +1,75 @@
 package org.covid.dashboard.servcies;
 
+import static org.covid.dashboard.util.DateFormatter.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.covid.dashboard.model.Cases;
-import org.covid.dashboard.model.CasesTwo;
+import org.apache.tomcat.jni.Local;
+import org.covid.dashboard.model.CountryCases;
 import org.covid.dashboard.model.VaccinatedCases;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.covid.dashboard.util.DateFormatter;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class VirusDataFetcherService {
-    private List<Cases> confirmedCasesList = new ArrayList<>();
-    private List<Cases> deathCasesList = new ArrayList<>();
-    private List<Cases> recoveredCasesList = new ArrayList<>();
-    private List<VaccinatedCases> vaccinatedCasesList = new ArrayList<>();
-
+public class VirusDataFetcherService extends DateFormatter {
     private static String ConfirmedCases=
             "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv";
     private static String DeathCases=
             "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv";
     private static String RecoveredCases=
             "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv";
-    private static String VaccinatedCases=
-            "https://raw.githubusercontent.com/govex/COVID-19/master/data_tables/vaccine_data/global_data/vaccine_data_global.csv";
+    private static final LocalDate startingDate = LocalDate.of(2020, 1,22);
 
-    public List<Cases> getConfirmedCasesList(){
+    private List<CountryCases> confirmedCasesList = new ArrayList<>();
+    private List<CountryCases> deathCasesList = new ArrayList<>();
+    private List<CountryCases> recoveredCasesList = new ArrayList<>();
+
+
+    public LocalDate getStartingDate(){
+        return startingDate;
+    }
+    public static LocalDate  getCurrentDay(){
+        return LocalDate.now();
+    }
+
+    public List<CountryCases> getConfirmedCasesList() {
         return new ArrayList<>(confirmedCasesList);
     }
 
-    public List<Cases> getRecoveredCasesList(){
-        return new ArrayList<>(recoveredCasesList);
-    }
-
-    public List<Cases> getDeathCasesList(){
+    public List<CountryCases> getDeathCasesList() {
         return new ArrayList<>(deathCasesList);
     }
 
-    public List<VaccinatedCases> getVaccinatedCasesList(){
-        return new ArrayList<>(vaccinatedCasesList);
+    public List<CountryCases> getRecoveredCasesList() {
+        return new ArrayList<>(recoveredCasesList);
     }
 
     @PostConstruct
     public void fetchAllVirusData() throws IOException, InterruptedException {
+
         fetchVirusData(ConfirmedCases, confirmedCasesList);
+
         fetchVirusData(RecoveredCases, recoveredCasesList);
+
         fetchVirusData(DeathCases, deathCasesList);
-        fetchVirusDataForVaccinated(VaccinatedCases, vaccinatedCasesList);
-
     }
 
-    private void fetchVirusData(String dataURI, List<Cases> casesList) throws IOException, InterruptedException {
+    private void fetchVirusData(String dataURI, List<CountryCases> countryCasesList) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -72,101 +78,93 @@ public class VirusDataFetcherService {
 
         HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        populateConfirmedCases(httpResponse.body(), casesList);
-        populateConfirmedCasesTwo(httpResponse.body());
+        populatedCases(httpResponse.body(), countryCasesList);
     }
 
-    private void populateConfirmedCases(String csvFile, List<Cases> casesList) throws IOException {
-        String[] formattedDateHeaderColumns = getFormattedDateHeaderColumns();
-
+    private void populatedCases(String csvFile, List<CountryCases> countryCasesList) throws IOException {
         Reader reader = new StringReader(csvFile);
 
         Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(reader);
 
-        for (CSVRecord record : records) {
-            String country = record.get("Country/Region");
-            String state = record.get("Province/State");
-            Long currentDaysCases = Long.valueOf(record.get(formattedDateHeaderColumns[0]));
-            Long previousDaysCases = Long.valueOf(record.get(formattedDateHeaderColumns[1]));
-
-            casesList.add(new Cases(country, state, currentDaysCases, previousDaysCases));
-        }
-
-        reader.close();
-    }
-
-    private void populateConfirmedCasesTwo(String csvFile) throws IOException {
-        List<CasesTwo> casesTwoList = new ArrayList<>();
-
-        String[] formattedDateHeaderColumns = getFormattedDateHeaderColumns();
-
-        Reader reader = new StringReader(csvFile);
-
-        Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(reader);
 
         for (CSVRecord record : records) {
-/*
-            Long currentDaysCases = Long.valueOf(record.get(formattedDateHeaderColumns[0]));
-            Long previousDaysCases = Long.valueOf(record.get(formattedDateHeaderColumns[1]));*/
-            ;
-
-            CasesTwo casesTwo = new CasesTwo();
+            CountryCases countryCases = new CountryCases();
 
             String country = record.get("Country/Region");
             String state = record.get("Province/State");
 
-            casesTwo.setCountry(country);
-            casesTwo.setState(state);
+            LocalDate currentDateTwo = startingDate;
 
-            for (int i = 1; i < record.size() -4; i++){
-                casesTwo.getCurrentDaysCases().add(
-                        Long.valueOf(record.get(LocalDate.now().minusDays(i).format(DateTimeFormatter.ofPattern("M/d/yy")).toString())));
-            }
-            System.out.println(casesTwo);
-        }
+            if (isCountryInCountryList(countryCasesList,country) && !state.equals(" ")){
+                int countryIndex = getIndexOfCountry(countryCasesList, country);
 
+                CountryCases countryCaseForState = countryCasesList.get(countryIndex);
 
-        reader.close();
-    }
+                while (!currentDateTwo.equals(getCurrentDay())){
+                    String currentDateAtIndex = formatLocalDate(currentDateTwo);
 
-    private void fetchVirusDataForVaccinated(String dataURI, List<VaccinatedCases> vaccinatedCases) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
+                    countryCaseForState.getCasesByDate().put(currentDateAtIndex,
+                            countryCaseForState.getCasesByDate().get(currentDateAtIndex) + Long.valueOf(record.get(currentDateAtIndex)));
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(dataURI))
-                .build();
+                    currentDateTwo = currentDateTwo.plusDays(1);
+                }
 
-        HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
+                countryCasesList.set(countryIndex, countryCaseForState);
 
-        populateVaccinatedCases(httpResponse.body(), vaccinatedCases);
-    }
-
-    private void populateVaccinatedCases(String csvFile, List<VaccinatedCases> casesList) throws IOException {
-        Reader reader = new StringReader(csvFile);
-
-        Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(reader);
-
-        for (CSVRecord record : records) {
-            String country = record.get("Country_Region");
-            String state = record.get("Province_State");
-            String people_fully_vaccinated = record.get("People_fully_vaccinated");
-
-            if (people_fully_vaccinated.equalsIgnoreCase(""))
                 continue;
+            }
 
-            long vaccinatedTotal = Long.valueOf(people_fully_vaccinated);
+            countryCases.setCountry(country);
 
-            vaccinatedCasesList.add(new VaccinatedCases(country, state, vaccinatedTotal));
+            while (!currentDateTwo.equals(getCurrentDay())){
+                String currentDateAtIndex = formatLocalDate(currentDateTwo);
+
+                countryCases.getCasesByDate().put(currentDateAtIndex, Long.valueOf(record.get(currentDateAtIndex)));
+
+                currentDateTwo = currentDateTwo.plusDays(1);
         }
 
+            countryCasesList.add(countryCases);
+    }
         reader.close();
     }
 
-    private String[] getFormattedDateHeaderColumns(){
-        String currentDayDateHeader = LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("M/dd/yy")).toString();
-        String previousDayDateHeader = LocalDate.now().minusDays(2).format(DateTimeFormatter.ofPattern("M/dd/yy")).toString();
 
-        return new String[] {currentDayDateHeader, previousDayDateHeader};
+
+    public boolean isCountryInCountryList(List<CountryCases> countryCasesList, String countryName) {
+        for (CountryCases cc:countryCasesList) {
+            if (cc.getCountry().equals(countryName))
+                return true;
+        }
+
+        return false;
     }
 
+    public int getIndexOfCountry(List<CountryCases> countryCasesList, String countryName) {
+        for (int i = 0; i < countryCasesList.size(); i++) {
+            if (countryCasesList.get(i).getCountry().equals(countryName))
+                return i;
+        }
+        return -1;
+    }
+
+    public static List<String> dateKeys(){
+        List<String> dates = new ArrayList<>();
+
+        LocalDate currentDateTwo = startingDate;
+
+            while (!currentDateTwo.equals(getCurrentDay())){
+                String currentDateAtIndex = formatLocalDate(currentDateTwo);
+                dates.add(currentDateAtIndex);
+
+                currentDateTwo = currentDateTwo.plusDays(1);
+            }
+
+            return dates;
+    }
+
+    public int getNmberOfCountries(){
+        return getConfirmedCasesList().size();
+    }
 }
+
