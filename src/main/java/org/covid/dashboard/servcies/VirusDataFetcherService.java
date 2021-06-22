@@ -11,7 +11,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
@@ -59,6 +61,9 @@ public class VirusDataFetcherService extends DateFormatter {
         return new ArrayList<>(recoveredCasesList);
     }
 
+    @Autowired
+    RestTemplate restTemplate;
+
     @PostConstruct
     public void fetchAllVirusData() throws IOException, InterruptedException {
 
@@ -72,13 +77,9 @@ public class VirusDataFetcherService extends DateFormatter {
     private void fetchVirusData(String dataURI, List<CountryCases> countryCasesList) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(dataURI))
-                .build();
+        String result = restTemplate.getForObject(dataURI, String.class);
 
-        HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        populatedCases(httpResponse.body(), countryCasesList);
+        populatedCases(result, countryCasesList);
     }
 
     private void populatedCases(String csvFile, List<CountryCases> countryCasesList) throws IOException {
