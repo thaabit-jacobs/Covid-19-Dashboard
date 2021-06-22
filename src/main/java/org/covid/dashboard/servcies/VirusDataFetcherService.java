@@ -7,20 +7,13 @@ import org.apache.tomcat.jni.Local;
 import org.covid.dashboard.model.CountryCases;
 import org.covid.dashboard.model.VaccinatedCases;
 import org.covid.dashboard.util.DateFormatter;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
@@ -75,8 +68,6 @@ public class VirusDataFetcherService extends DateFormatter {
     }
 
     private void fetchVirusData(String dataURI, List<CountryCases> countryCasesList) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-
         String result = restTemplate.getForObject(dataURI, String.class);
 
         populatedCases(result, countryCasesList);
