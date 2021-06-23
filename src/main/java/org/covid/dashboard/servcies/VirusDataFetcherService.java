@@ -9,6 +9,7 @@ import org.covid.dashboard.model.VaccinatedCases;
 import org.covid.dashboard.util.DateFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -58,6 +59,7 @@ public class VirusDataFetcherService extends DateFormatter {
     RestTemplate restTemplate;
 
     @PostConstruct
+    @Scheduled(cron = "0 30 12 * * ?")
     public void fetchAllVirusData() throws IOException, InterruptedException {
 
         fetchVirusData(ConfirmedCases, confirmedCasesList);
