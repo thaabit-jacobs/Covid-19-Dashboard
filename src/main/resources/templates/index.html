@@ -27,8 +27,8 @@
         <button type="submit" class="btn btn-primary">Filter</button>
     </form>
 
-
     <div class="my-5 vertical-scrollable" style="height:50vh">
+        <h2 class="my-5">Total number of infected, deaths, recovered and deaths percent</h2>
         <table class="table table-hover table-striped">
             <thead>
             <tr>
@@ -53,6 +53,8 @@
         </table>
     </div>
 
+
+    <div th:replace="fragments :: scriptTest"></div>
 
     <div class="my-5">
         <h2 class="my-5">Total number of infected, deaths and recovered</h2>

@@ -14,6 +14,7 @@ public class CovidDashboardApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CovidDashboardApplication.class, args);
 	}
+
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder builder) {
 

@@ -50,6 +50,8 @@ public class DashBoardController {
         model.addAttribute("allCountryDataForEachDaySortByDeaths", (Map)(globalTotalsObject.get("allCountryDataForEachDaySortByDeaths")));
 
         model.addAttribute("countryNames", (List)(globalTotalsObject.get("countryNames")));
+
+        System.out.println("Hitting home controller");
         return "index";
     }
 

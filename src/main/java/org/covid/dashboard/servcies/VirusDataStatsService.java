@@ -93,8 +93,9 @@ public class VirusDataStatsService extends DateFormatter {
 
         //populate death percent cases for current day
         dataMap.stream().forEach( fe -> {
-           fe.put("deathsPercent", Precision.round(Long.valueOf((Long)fe.get("deaths")).doubleValue()/
-                   Long.valueOf((Long)fe.get("confirmed")).doubleValue() *100 ,1));
+            String result = ""+Precision.round(Long.valueOf((Long)fe.get("deaths")).doubleValue()/
+                    Long.valueOf((Long)fe.get("confirmed")).doubleValue() *100 ,1);
+           fe.put("deathsPercent", result.equals("NaN")?"0.0":result);
         });
 
         //sort
@@ -275,9 +276,12 @@ public class VirusDataStatsService extends DateFormatter {
         globalTotalsObject.put("confirmed", calculateGlobalTotal(Type.CONFIRMED));
         globalTotalsObject.put("deaths", calculateGlobalTotal(Type.DEATHS));
         globalTotalsObject.put("recovered", calculateGlobalTotal(Type.RECOVERIES));
-        globalTotalsObject.put("deathsPercent",
-                Precision.round(Long.valueOf((Long)globalTotalsObject.get("deaths")).doubleValue()/
-                        Long.valueOf((Long)globalTotalsObject.get("confirmed")).doubleValue() *100 ,1));
+        globalTotalsObject.put("deathsPercent", Precision.round(Long.valueOf((Long)globalTotalsObject.get("deaths")).doubleValue()/
+                Long.valueOf((Long)globalTotalsObject.get("confirmed")).doubleValue() *100 ,1)
+ );
+        System.out.println(               Precision.round(Long.valueOf((Long)globalTotalsObject.get("deaths")).doubleValue()/
+                Long.valueOf((Long)globalTotalsObject.get("confirmed")).doubleValue() *100 ,1));
+
         globalTotalsObject.put("countriesTotalData", getAllCountriesTotalData(type));
         globalTotalsObject.put("countriesTotalDataEachDay", getGlobalTotalEachDay());
         globalTotalsObject.put("individualCountryTotals", individualCountryTotals(20));
